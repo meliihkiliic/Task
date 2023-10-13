@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Yönetimi</title>
+</head>
+<body>
+<h1>Kullanıcı Yönetimi</h1>
+
+<label for="userName">Kullanıcı Adı:</label>
+<input type="text" id="userName" placeholder="Kullanıcı adınızı girin"><br><br>
+
+<label for="userId">Kullanıcı ID:</label>
+<input type="text" id="userId" placeholder="Kullanıcı ID'sini girin"><br><br>
+
+<button onclick="kullaniciKaydet()">Kaydet</button>
+<button onclick="kullaniciGuncelle()">Güncelle</button>
+
+
+<h2>Mevcut Kullanıcılar</h2>
+<ul id="kullaniciListesi">
+    <!-- Kullanıcılar burada listelenecek -->
+</ul>
+
+<script>
+        async function kullaniciKaydet() {
+            const userName = document.getElementById("userName").value;
+            const userId = document.getElementById("userId").value;
+
+            // Kullanıcıyı sunucuya gönderme işlemini burada yapabilirsiniz.
+            // Örnek olarak bir JavaScript fetch isteği kullanabilirsiniz.
+
+            const response = await fetch('/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userName, userId })
+            });
+
+            if (response.ok) {
+                // Başarılı kayıt durumunda kullanıcıyı listeye ekleyin.
+                const newUser = { userName, userId };
+                const kullaniciListesi = document.getElementById("kullaniciListesi");
+                const listItem = document.createElement("li");
+                listItem.textContent = `${newUser.userName} (ID: ${newUser.userId})`;
+                kullaniciListesi.appendChild(listItem);
+
+                // Input alanlarını temizle
+                document.getElementById("userName").value = "";
+                document.getElementById("userId").value = "";
+            } else {
+                alert("Kullanıcı kaydedilemedi.");
+            }
+        }
+
+        async function kullaniciGuncelle() {
+    const userId = document.getElementById("userId").value;
+    const newUserName = document.getElementById("userName").value;
+
+    const response = await fetch(`/users/${userId}?userName=${newUserName}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.ok) {
+        // Başarılı güncelleme durumunda kullanıcı adını güncelleyin.
+        const kullaniciListesi = document.getElementById("kullaniciListesi");
+        const listItem = kullaniciListesi.querySelector(`li[data-user-id="${userId}"]`);
+        if (listItem) {
+            listItem.textContent = `${newUserName} (ID: ${userId})`;
+        }
+
+        // Input alanlarını temizle
+        document.getElementById("userName").value = "";
+        document.getElementById("userId").value = "";
+    } else {
+        alert("Kullanıcı güncellenemedi.");
+    }
+}
+
+
+        // Sayfa yüklendiğinde mevcut kullanıcıları getirin ve listeye ekleyin.
+        window.onload = async () => {
+            const response = await fetch('/users');
+            if (response.ok) {
+                const users = await response.json();
+                const kullaniciListesi = document.getElementById("kullaniciListesi");
+                users.forEach(user => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = `${user.userName} (ID: ${user.userId})`;
+                    kullaniciListesi.appendChild(listItem);
+                });
+            }
+        };
+    </script>
+</body>
+</html>
+
